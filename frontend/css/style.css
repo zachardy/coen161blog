@@ -1,0 +1,31 @@
+body {
+	background-color: #333;
+}
+h1,h2,h3,h4,h5,h6, p {
+	color: #ccc;
+	font-family: Bitter;
+}
+
+.center {
+	text-align:center;
+}
+
+.content-main {
+	display:flex;
+	flex-direction: column;
+	margin: auto;
+
+	background-color: #444;
+	width:50vw;
+	padding-left:5vw;
+	padding-right:5vw;
+}
+
+ul {
+	list-style: none;
+	padding-inline-start: 0px;
+}
+
+.clickable:hover {
+	background-color:#555;
+}

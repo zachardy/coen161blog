@@ -1,0 +1,24 @@
+{
+  "name": "blog",
+  "version": "1.0.0",
+  "description": "a node based blog",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zachardy/coen161blog.git"
+  },
+  "author": "Zac & Aiyushi",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/zachardy/coen161blog/issues"
+  },
+  "homepage": "https://github.com/zachardy/coen161blog#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "fs": "0.0.1-security"
+  }
+}
