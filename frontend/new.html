@@ -3,7 +3,7 @@
 <head>
 	<link rel="stylesheet" href="css/style.css">
 	<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Bitter">
-	<script src="js/post.js" defer></script>
+	<script src="js/new.js" defer></script>
 </head>
 <body>
 	<header>
@@ -13,15 +13,13 @@
 			<h1 class="center">WebLog</h1>
 			<a href="index.html" style="text-decoration:none; float:right; background-color:#555;padding:1%;"><h3>Click here to go back</h3></a>
 		</span>
-		<ul id="post_content"></ul>
-		<ul id="comment_content">
-			<form id = "add_comment">
-				<input type="text" placeholder="name" maxlength="50" id="form_name">
-				<textarea placeholder="comment" maxlength="4000" id="form_body"></textarea>
-				<div id="submit"><p>add comment</p></div> <!-- todo: add form functionality & styling to creating a new comment -->
-			</form>
-			<h3>Comments:</h3>
-		</ul>
+		<h3>Create New Post:</h3>
+		<form id = "create_post">
+			<input type="text" placeholder="name" maxlength="50" id="form_name">
+			<input type="text" placeholder="title" maxlength="200" id="form_title">
+			<textarea placeholder="body" maxlength="4000" id="form_body"></textarea>
+			<div id="submit"><p>create post</p></div> <!-- todo: add form functionality & styling to creating a new comment -->
+		</form>
 	</section>
 </body>
 </html>

@@ -1,10 +1,6 @@
 let post_id_parser = new URLSearchParams(window.location.search);
 let post_id = post_id_parser.has("id") ? post_id_parser.get("id") : undefined;
 
-if(post_id) {
-
-}
-
 let post = fetch(`/post/${post_id}`)
 .then(response => response.ok ? response.json() : Promise.reject("error getting data"))
 .then(data => {
@@ -25,6 +21,27 @@ let comments = fetch(`/comments/${post_id}`)
 		addComment(parent, author, body);
 	}
 });
+
+
+let comment_submit_button = document.querySelector("#submit");
+comment_submit_button.addEventListener("click", () => {
+	let author_input = document.querySelector("#form_name").value;
+	let body_input = document.querySelector("#form_body").value;
+	if(author_input && body_input) { //valid content added, submit comment to API and reload page
+
+	const comment = fetch('/createcomment', {
+	    method: 'POST',
+	    headers: {
+	      'Content-Type': 'application/json'
+	    },
+	    body: JSON.stringify({'id':post_id, 'author':author_input, 'body':body_input})
+	  }).then(response => response.ok ? response.json() : Promise.reject("error creating comment")).then(data => window.location.reload());
+	}
+	else {
+		console.log("invalid input, please include both a name and a comment");
+	}
+});
+
 
 function addBlogPost(parent, author, title, body) {
 
@@ -47,7 +64,7 @@ function addBlogPost(parent, author, title, body) {
 	parent.appendChild(textContainer);
 
 	let horizontal_bar = document.createElement("div");
-	horizontal_bar.setAttribute("style","width:100%; height:1vh; background-color:#fff;margin-top:2vh;margin-bottom:2vh;");
+	horizontal_bar.setAttribute("style","width:100%; height:0.5vh; background-color:#fff;margin-top:0.5vh;margin-bottom:0.5vh;");
 	parent.appendChild(horizontal_bar);
 
 }

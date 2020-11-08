@@ -107,7 +107,7 @@ const main = () => {
 	app.post("/createcomment", createComment);
 	//app.post("/gif/:mood", addNewGif);
 
-	//delete routes of API
+	//delete routes of API (so far none)
 	//app.delete("/mood/:mood", deleteMood);
 	//app.delete("/gif/:mood", deleteGif);
 
@@ -125,33 +125,3 @@ const main = () => {
 };
 
 main();
-
-/*
-my cURL commands used to test/validate application:
-
-Task 2 - GETs
-curl http://localhost:3000/moods
-curl http://localhost:3000/gifs
-curl http://localhost:3000/gif/happy
-curl http://localhost:3000/gif/sad
-curl http://localhost:3000/gif/empty
-curl http://localhost:3000/gif/doesntexist
-
-Task 3 - POSTs
-curl -H "content-type: application/json" -d '{"mood":"angry"}' http://localhost:3000/mood
-curl -H "content-type: application/json" -d '{"link":"https://media.giphy.com/media/13k4VSc3ngLPUY/giphy.gif" }' localhost:3000/gif/happy
-curl -H "content-type: application/json" -d '{"link":"https://media.giphy.com/media/13k4VSc3ngLPUY/giphy.gif" }' localhost:3000/gif/doesntexist
-
-curl -H "content-type: application/json" localhost:3000/createpost -d '{"author":"zac","title":"postedpost","body":"alacazam"}'
-
-Task 4 - DELETEs
-curl -X DELETE localhost:3000/mood/happy
-curl http://localhost:3000/moods
-curl http://localhost:3000/gif/happy
-
-curl http://localhost:3000/gifs
-curl -X DELETE -H "content-type: application/json" -d '{"link":"https://media.giphy.com/media/13k4VSc3ngLPUY/giphy.gif" }' localhost:3000/gif/sad
-curl -X DELETE -H "content-type: application/json" -d '{"link":"https://media.giphy.com/media/1BXa2alBjrCXC/giphy.gif" }' localhost:3000/gif/sad
-
-curl http://localhost:3000/gifs
-*/
