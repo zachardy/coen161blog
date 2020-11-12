@@ -2,6 +2,7 @@ const express = require('express')
 const fs = require('fs').promises
 
 const getAllPosts = (req, res) => {
+	console.log(req.connection.remoteAddress);
 	let status_code = 200;
 	const postsJSON = res.app.locals.postsJSON;
 	res.status(status_code).send(postsJSON);
@@ -22,7 +23,10 @@ const getSinglePost = (req, res) => {
 	}
 	//else, return the post to the client
 	//delete post.comments; //not sure if we want to do this to fully separate the comments and the post or not (this was a bad idea)
+	//increment views of post by one
+	post.views++;
 	res.status(status_code).send(post);
+	commitChanges(res.app.locals.postsJSON);
 };
 
 const getCommentsFromPost = (req, res) => {
@@ -34,7 +38,6 @@ const getCommentsFromPost = (req, res) => {
 		res.status(status_code).send({"status":"error 400 bad request, no id parameter included in query"});
 	}
 	let comments = postsJSON["posts"][id-1]["comments"]; //fix array offset by one
-	console.log(postsJSON["posts"][id-1]["comments"]);
 	if(!comments) { //no post with that id, 204 no content
 		staus_code = 204;
 		res.status(status_code).send({"status":"error 204 no content, no post exists with that id"});

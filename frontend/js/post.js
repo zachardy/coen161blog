@@ -6,9 +6,10 @@ let post = fetch(`/post/${post_id}`)
 .then(data => {
 	let parent = document.querySelector("#post_content");
 	let author = data.author;
+	let views = data.views;
 	let title = data.title;
 	let body = data.body;
-	addBlogPost(parent, author, title, body);
+	addBlogPost(parent, author, views, title, body);
 });
 
 let comments = fetch(`/comments/${post_id}`)
@@ -43,7 +44,7 @@ comment_submit_button.addEventListener("click", () => {
 });
 
 
-function addBlogPost(parent, author, title, body) {
+function addBlogPost(parent, author, views, title, body) {
 
 	let textContainer = document.createElement("div");
 	textContainer.setAttribute("style","padding:1%");
@@ -56,6 +57,10 @@ function addBlogPost(parent, author, title, body) {
 	let authorElement = document.createElement("h3");
 	authorElement.textContent = "by "+author;
 	textContainer.appendChild(authorElement);
+
+	let viewsElement = document.createElement("p");
+	viewsElement.textContent = "views: " + views;
+	textContainer.appendChild(viewsElement);
 
 	let bodyElement = document.createElement("p");
 	bodyElement.textContent = body;

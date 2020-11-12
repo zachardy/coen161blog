@@ -6,13 +6,14 @@ let posts = fetch("/posts")
 		for(let i=posts.length-1; i>=0; i--) { //load in reverse order to sort by newest to oldest
 			let id = posts[i].id;
 			let author = posts[i].author;
+			let views = posts[i].views;
 			let title = posts[i].title;
 			let body = posts[i].body;
-			addBlogPost(post_list, id, author, title, body);
+			addBlogPost(post_list, id, author, views, title, body);
 		}
 	});
 
-function addBlogPost(parent, id, author, title, body) {
+function addBlogPost(parent, id, author, views, title, body) {
 
 	let container = document.createElement("a");
 	container.setAttribute("style","text-decoration:none;");
@@ -31,6 +32,10 @@ function addBlogPost(parent, id, author, title, body) {
 	let authorElement = document.createElement("p");
 	authorElement.textContent = "by "+author;
 	textContainer.appendChild(authorElement);
+
+	let viewsElement = document.createElement("p");
+	viewsElement.textContent = "views: " + views;
+	textContainer.appendChild(viewsElement);
 
 	let bodyElement = document.createElement("p");
 	if(body.length > 250) {
