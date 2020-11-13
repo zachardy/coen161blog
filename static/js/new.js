@@ -5,7 +5,7 @@ post_submit_button.addEventListener("click", () => {
 	let body_input = document.querySelector("#form_body").value;
 	if(author_input && title_input && body_input) { //valid content added, submit comment to API and reload page
 
-	const comment = fetch('/createpost', {
+	const comment = fetch('/api/createpost', {
 	    method: 'POST',
 	    headers: {
 	      'Content-Type': 'application/json'

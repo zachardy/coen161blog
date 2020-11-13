@@ -1,0 +1,80 @@
+body {
+	background-color: #333;
+}
+
+h1,h2,h3,h4,h5,h6, p, em, strong, input, textarea {
+	color: #ccc;
+	font-family: Bitter;
+}
+
+ul {
+	list-style: none;
+	padding-inline-start: 0px;
+}
+
+textarea {
+	width: 100%;
+	resize: vertical;
+	padding: 15px;
+	border-radius: 5px;
+	border: 0;
+	box-shadow: 4px 4px 10px rgba(0,0,0,0.06);
+	height: 150px;
+	margin-bottom: 3vh;
+}
+
+input[type=text] {
+	width: 100%;
+	resize: vertical;
+	padding: 15px;
+	border-radius: 5px;
+	border: 0;
+	box-shadow: 4px 4px 10px rgba(0,0,0,0.06);
+	height: 15px;
+	margin-bottom: 1vh;
+}
+
+.center {
+	text-align: center;
+	font-size: 5vw;
+}
+
+.content-main {
+	display: flex;
+	flex-direction: column;
+	margin: auto;
+
+	background-color: #444;
+	width: 50vw;
+	padding-left: 5vw;
+	padding-right: 5vw;
+}
+
+.clickable:hover {
+	background-color: #555;
+}
+
+.nav-link {
+	text-decoration: none;
+	float: right;
+	background-color: #555;
+	padding: 1%;
+}
+
+.nav-link:hover {
+	background-color: #777;
+}
+
+#submit {
+	padding: 10px;
+	background-color: #555;
+	color: #fff;
+	border-radius: 5px;
+	width: 100%;
+	margin-bottom: 3vh;
+}
+
+#submit:hover {
+	background-color: #777;
+	cursor: pointer;
+}

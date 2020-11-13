@@ -1,4 +1,4 @@
-let posts = fetch("/posts")
+let posts = fetch("/api/posts")
 .then(response => response.ok ? response.json() : Promise.reject("error getting data"))
 .then(data => {
 	let posts = data.posts;
@@ -38,11 +38,11 @@ function addBlogPost(parent, id, author, views, title, body) {
 	textContainer.appendChild(viewsElement);
 
 	let bodyElement = document.createElement("p");
-	if(body.length > 250) {
-		bodyElement.textContent = body.slice(0,250) + "... click to read more";
+	if(body.length > 250) { //dont bother rendering html since we are slicing
+		bodyElement.innerText = body.slice(0,250) + "... click to read more";
 	}
-	else {
-		bodyElement.textContent = body;
+	else { //render post as proper html
+		bodyElement.innerHTML = body;
 	}
 	textContainer.appendChild(bodyElement);
 

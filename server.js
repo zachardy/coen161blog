@@ -6,7 +6,7 @@ const getAllPosts = (req, res) => {
 	const postsJSON = res.app.locals.postsJSON;
 	res.status(status_code).send(postsJSON);
 	//logging
-	req.logs.resourceRequested = `getAllPosts`;
+	req.logs.resource = `getAllPosts`;
 };
 
 const getSinglePost = (req, res) => {
@@ -29,7 +29,7 @@ const getSinglePost = (req, res) => {
 	res.status(status_code).send(post);
 	commitChanges(res.app.locals.postsJSON);
 	//logging
-	req.logs.resourceRequested = `getSinglePost/${id}`;
+	req.logs.resource = `getSinglePost/${id}`;
 };
 
 const getCommentsFromPost = (req, res) => {
@@ -48,7 +48,7 @@ const getCommentsFromPost = (req, res) => {
 	//else, return the coments to the client
 	res.status(status_code).send(comments);
 	//logging
-	req.logs.resourceRequested = `getCommentsFromPost/${id}`;
+	req.logs.resource = `getCommentsFromPost/${id}`;
 }	
 
 const createPost = (req, res) => {
@@ -68,7 +68,7 @@ const createPost = (req, res) => {
 		commitChanges(res.app.locals.postsJSON);
 	}
 	//logging
-	req.logs.resourceRequested = `createPost`;
+	req.logs.resource = `createPost`;
 }
 
 const createComment = (req, res) => {
@@ -91,7 +91,7 @@ const createComment = (req, res) => {
 		commitChanges(res.app.locals.postsJSON);
 	}
 	//logging
-	req.logs.resourceRequested = `createComment`;
+	req.logs.resource = `createComment`;
 }
 
 //call this function with res.app.locals.postsJSON as the parameter to save changes made to the data on the server
@@ -106,7 +106,7 @@ const commitChanges = (data) => {
 const loggingHandler = (req, res, next) => {
 	req.logs = {ip:req.connection.remoteAddress, time:Date(Date.now())};
 	next();
-	if(req.logs.resourceRequested) {
+	if(req.logs.resource) { //non-static requests only
 		try {
 			fs.appendFile("./logs.txt", JSON.stringify(req.logs)+"\n");
 		} catch (err) {
@@ -122,20 +122,19 @@ const main = () => {
 	app.use(express.json());
 
 	//get routes of API
-	app.get("/posts", loggingHandler, getAllPosts);
-	app.get("/post/:id", loggingHandler, getSinglePost);
-	app.get("/comments/:id", loggingHandler, getCommentsFromPost);
+	app.get("/api/posts", loggingHandler, getAllPosts);
+	app.get("/api/post/:id", loggingHandler, getSinglePost);
+	app.get("/api/comments/:id", loggingHandler, getCommentsFromPost);
 
 	//post routes of API
-	app.post("/createpost", createPost);
-	app.post("/createcomment", createComment);
-	//app.post("/gif/:mood", addNewGif);
+	app.post("/api/createpost", loggingHandler, createPost);
+	app.post("/api/createcomment", loggingHandler, createComment);
 
 	//delete routes of API (so far none)
 	//app.delete("/mood/:mood", deleteMood);
 	//app.delete("/gif/:mood", deleteGif);
 
-	app.use(express.static('frontend'));
+	app.use(express.static('static'));
 
 	fs.readFile("./blog_posts.json", "utf-8")
 	.then((fileContents) => JSON.parse(fileContents))

@@ -1,7 +1,7 @@
 let post_id_parser = new URLSearchParams(window.location.search);
 let post_id = post_id_parser.has("id") ? post_id_parser.get("id") : undefined;
 
-let post = fetch(`/post/${post_id}`)
+let post = fetch(`/api/post/${post_id}`)
 .then(response => response.ok ? response.json() : Promise.reject("error getting data"))
 .then(data => {
 	let parent = document.querySelector("#post_content");
@@ -12,7 +12,7 @@ let post = fetch(`/post/${post_id}`)
 	addBlogPost(parent, author, views, title, body);
 });
 
-let comments = fetch(`/comments/${post_id}`)
+let comments = fetch(`/api/comments/${post_id}`)
 .then(response => response.ok ? response.json() : Promise.reject("error getting data"))
 .then(data => {
 	let parent = document.querySelector("#comment_content");
@@ -30,7 +30,7 @@ comment_submit_button.addEventListener("click", () => {
 	let body_input = document.querySelector("#form_body").value;
 	if(author_input && body_input) { //valid content added, submit comment to API and reload page
 
-	const comment = fetch('/createcomment', {
+	const comment = fetch('/api/createcomment', {
 	    method: 'POST',
 	    headers: {
 	      'Content-Type': 'application/json'
@@ -63,7 +63,7 @@ function addBlogPost(parent, author, views, title, body) {
 	textContainer.appendChild(viewsElement);
 
 	let bodyElement = document.createElement("p");
-	bodyElement.textContent = body;
+	bodyElement.innerHTML = body;
 	textContainer.appendChild(bodyElement);
 
 	parent.appendChild(textContainer);
@@ -79,7 +79,7 @@ function addComment(parent, author, body) {
 	textContainer.setAttribute("style","padding:1%");
 
 	let bodyElement = document.createElement("p");
-	bodyElement.textContent = body;
+	bodyElement.innerHTML = body;
 	textContainer.appendChild(bodyElement);
 
 	let authorElement = document.createElement("p");
