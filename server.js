@@ -1,5 +1,5 @@
-const express = require('express')
-const fs = require('fs').promises
+const express = require('express');
+const fs = require('fs').promises;
 
 const getAllPosts = (req, res) => {
 	let status_code = 200;
@@ -17,7 +17,7 @@ const getSinglePost = (req, res) => {
 		status_code = 400;
 		res.status(status_code).send({"status":"error 400 bad request, no id parameter included in query"});
 	}
-	let post = postsJSON["posts"][id-1]; //fix array offset by one
+	let post = getPostFromId(res.app.locals.postsJSON, id);
 	if(!post) { //no post with that id, 204 no content
 		staus_code = 204;
 		res.status(status_code).send({"status":"error 204 no content, no post exists with that id"});
@@ -40,7 +40,7 @@ const getCommentsFromPost = (req, res) => {
 		status_code = 400;
 		res.status(status_code).send({"status":"error 400 bad request, no id parameter included in query"});
 	}
-	let comments = postsJSON["posts"][id-1]["comments"]; //fix array offset by one
+	let comments = getCommentsFromId(res.app.locals.postsJSON, id);
 	if(!comments) { //no post with that id, 204 no content
 		staus_code = 204;
 		res.status(status_code).send({"status":"error 204 no content, no post exists with that id"});
@@ -53,7 +53,7 @@ const getCommentsFromPost = (req, res) => {
 
 const createPost = (req, res) => {
 	let status_code = 200;
-	let id = req.app.locals.postsJSON["posts"].length + 1;
+	let id = nextPostId(req.app.locals.postsJSON);
 	let author = req.body.author;
 	let title = req.body.title;
 	let body = req.body.body;
@@ -80,7 +80,7 @@ const createComment = (req, res) => {
 		status_code = 400;
 		res.status(status_code).send({"status":"error 400 bad request, necessary parameters are 'id' 'author' and 'body'"});
 	}
-	let comments = res.app.locals.postsJSON["posts"][id-1]["comments"]; //fix array offset by one
+	let comments = getCommentsFromId(res.app.locals.postsJSON, id);
 	if(!comments) {
 		staus_code = 204;
 		res.status(status_code).send({"status":"error 204 no content, no post exists with that id"});
@@ -94,6 +94,124 @@ const createComment = (req, res) => {
 	req.logs.resource = `createComment`;
 }
 
+const updatePost = (req, res) => {
+	let status_code = 200;
+	let id = req.params.id;
+	let author = req.body.author;
+	let title = req.body.title;
+	let body = req.body.body;
+	if(!id || !author || !title || !body) { //one or more parameters are not set, 400 bad request
+		status_code = 400;
+		res.status(status_code).send({"status":"error 400 bad request, necessary parameters are 'id' (in route path) 'author' 'title' and 'body'"});
+	}
+	else {
+		let post = getPostFromId(res.app.locals.postsJSON, id);
+		if(!post) { //invalid id
+			status_code = 404;
+			res.status(status_code).send({"status":"error 404 not found, no post exists with that id"});
+		}
+		else {
+			post.author = author;
+			post.title = title;
+			post.body = body;
+			res.status(status_code).send({"status": "post updated!"});
+			commitChanges(res.app.locals.postsJSON);
+		}
+	}
+	//logging
+	req.logs.resource = `updatePost`;
+}
+
+const updateComment = (req, res) => {
+	let status_code = 200;
+	let post_id = req.params.post_id;
+	let comment_id = req.params.comment_id;
+	let author = req.body.author;
+	let body = req.body.body;
+	if(!post_id || !comment_id || !author || !body) { //one or more parameters are not set, 400 bad request
+		status_code = 400;
+		res.status(status_code).send({"status":"error 400 bad request, necessary parameters are 'post_id' and 'comment_id' (from route path) and 'author' and 'body'"});
+	}
+	else {
+		let post = getPostFromId(res.app.locals.postsJSON, post_id);
+		if(!post) { //invalid id
+			status_code = 404;
+			res.status(status_code).send({"status":"error 404 not found, no post exists with that id"});
+		}
+		else {
+			let comment = getCommentFromIds(res.app.locals.postsJSON, post_id, comment_id);
+			if(!comment) {
+				status_code = 404;
+				res.status(status_code).send({"status":"error 404 not found, no comment exists with that id"});
+			}
+			else {
+				comment.author = author;
+				comment.body = body;
+				res.status(status_code).send({"status": "comment updated!"});
+				commitChanges(res.app.locals.postsJSON);
+			}
+		}
+	}
+	//logging
+	req.logs.resource = `updateComment`;
+}
+
+const deletePost = (req, res) => {
+	let status_code = 200;
+	let id = req.params.id;
+	if(!id) { //one or more parameters are not set, 400 bad request
+		status_code = 400;
+		res.status(status_code).send({"status":"error 400 bad request, necessary parameters is 'id' (from route path)"});
+	}
+	else {
+		let post = getPostFromId(res.app.locals.postsJSON, id);
+		if(!post) { //invalid id
+			status_code = 404;
+			res.status(status_code).send({"status":"error 404 not found, no post exists with that id"});
+		}
+		else {
+			let deletion_index = res.app.locals.postsJSON["posts"].indexOf(post);
+			res.app.locals.postsJSON["posts"].splice(deletion_index, 1);
+			res.status(status_code).send({"status": "post deleted!"});
+			commitChanges(res.app.locals.postsJSON);
+		}
+	}
+	//logging
+	req.logs.resource = `deletePost`;
+}
+
+const deleteComment = (req, res) => {
+	let status_code = 200;
+	let post_id = req.params.post_id;
+	let comment_id = req.params.comment_id;
+	if(!post_id || !comment_id) { //one or more parameters are not set, 400 bad request
+		status_code = 400;
+		res.status(status_code).send({"status":"error 400 bad request, necessary parameters are 'post_id' and 'comment_id' (both from route path)"});
+	}
+	else {
+		let post = getPostFromId(res.app.locals.postsJSON, post_id);
+		if(!post) { //invalid id
+			status_code = 404;
+			res.status(status_code).send({"status":"error 404 not found, no post exists with that id"});
+		}
+		else {
+			let comment = getCommentFromIds(res.app.locals.postsJSON, post_id, comment_id);
+			if(!comment) {
+				status_code = 404;
+				res.status(status_code).send({"status":"error 404 not found, no comment exists with that id"});
+			}
+			else {
+				let deletion_index = post.comments.indexOf(comment);
+				post.comments.splice(deletion_index, 1); //remove just the one comment
+				res.status(status_code).send({"status": "comment deleted!"});
+				commitChanges(res.app.locals.postsJSON);
+			}
+		}
+	}
+	//logging
+	req.logs.resource = `deleteComment`;
+}
+
 //call this function with res.app.locals.postsJSON as the parameter to save changes made to the data on the server
 const commitChanges = (data) => {
 	try {
@@ -103,6 +221,33 @@ const commitChanges = (data) => {
 	}
 }
 
+//Internal Functions, not attached to any route
+const getPostFromId = (postsJSON, id) => {
+	let post = postsJSON["posts"].filter(post => post.id === Number(id))[0];
+	return post;
+}
+
+const getCommentsFromId = (postsJSON, id) => {
+	let post = getPostFromId(postsJSON, id);
+	let comments = post["comments"];
+	return comments;
+}
+
+const getCommentFromIds = (postsJSON, post_id, comment_id) => {
+	let comments = getCommentsFromId(postsJSON, post_id);
+	let comment = comments[comment_id];
+	return comment;
+}
+
+const nextPostId = (postsJSON) => {
+    let max_id = 0;
+    for(let i = 0; i < postsJSON["posts"].length; i++) {
+        max_id = Math.max(max_id, postsJSON["posts"][i].id)
+    }
+    return max_id + 1;
+}
+
+//Writes Access Logs
 const loggingHandler = (req, res, next) => {
 	req.logs = {ip:req.connection.remoteAddress, time:Date(Date.now())};
 	next();
@@ -130,9 +275,14 @@ const main = () => {
 	app.post("/api/createpost", loggingHandler, createPost);
 	app.post("/api/createcomment", loggingHandler, createComment);
 
-	//delete routes of API (so far none)
-	//app.delete("/mood/:mood", deleteMood);
-	//app.delete("/gif/:mood", deleteGif);
+
+	//update routs of API (unused in front-end but included for CRUD completeness)
+	app.put("/api/updatepost/:id", loggingHandler, updatePost);
+	app.put("/api/updatecomment/:post_id/comments/:comment_id", loggingHandler, updateComment); //yes, this url does blow up slightly but i think it's okay
+	
+	//delete routes of API (also unused in front-end but included for CRUD completeness)
+	app.delete("/api/deletepost/:id", loggingHandler, deletePost);
+	app.delete("/api/deletecomment/:post_id/comments/:comment_id", loggingHandler, deleteComment);
 
 	app.use(express.static('static'));
 
@@ -148,3 +298,23 @@ const main = () => {
 };
 
 main();
+
+/* tests
+
+GETS
+curl localhost:3000/api/posts
+curl localhost:3000/api/post/1
+curl localhost:3000/api/comments/1
+
+POSTS
+curl -X POST -H "content-type: application/json" -d '{"author":"writer","title":"here is a new post everyone!","body":"and here is the body to my post"}' localhost:3000/api/createpost
+curl -X POST -H "content-type: application/json" -d '{"id":1, "author":"commentor","body":"i am responding to your post"}' localhost:3000/api/createcomment
+
+UPDATES
+curl -X PUT -H "content-type: application/json" -d '{"author":"zebbe","title":"updated_post_title","body":"the body changed too!"}' localhost:3000/api/updatepost/1
+curl -X PUT -H "content-type: application/json" -d '{"author":"not zebbe","body":"the body changed again!"}' localhost:3000/api/updatecomment/1/comments/1
+
+DELETES
+curl -X DELETE localhost:3000/api/deletepost/5
+curl -X DELETE localhost:3000/api/deletecomment/1/comments/2
+*/
