@@ -6,5 +6,5 @@ currently requires the creation of a blog_posts.json file in the root directory 
 
 ```javascript
 
-{posts:[]}
+{"posts":[]}
 ```
