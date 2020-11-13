@@ -2,10 +2,11 @@ const express = require('express')
 const fs = require('fs').promises
 
 const getAllPosts = (req, res) => {
-	console.log(req.connection.remoteAddress);
 	let status_code = 200;
 	const postsJSON = res.app.locals.postsJSON;
 	res.status(status_code).send(postsJSON);
+	//logging
+	req.logs.resourceRequested = `getAllPosts`;
 };
 
 const getSinglePost = (req, res) => {
@@ -27,6 +28,8 @@ const getSinglePost = (req, res) => {
 	post.views++;
 	res.status(status_code).send(post);
 	commitChanges(res.app.locals.postsJSON);
+	//logging
+	req.logs.resourceRequested = `getSinglePost/${id}`;
 };
 
 const getCommentsFromPost = (req, res) => {
@@ -44,6 +47,8 @@ const getCommentsFromPost = (req, res) => {
 	}
 	//else, return the coments to the client
 	res.status(status_code).send(comments);
+	//logging
+	req.logs.resourceRequested = `getCommentsFromPost/${id}`;
 }	
 
 const createPost = (req, res) => {
@@ -58,10 +63,12 @@ const createPost = (req, res) => {
 		res.status(status_code).send({"status":"error 400 bad request, necessary parameters are 'author' 'title' and 'body'"});
 	}
 	else {
-		res.app.locals.postsJSON["posts"].push({"id":id, "author":author, "title":title, "body":body, "comments":comments});
+		res.app.locals.postsJSON["posts"].push({"id":id, "views":0, "author":author, "title":title, "body":body, "comments":comments});
 		res.status(status_code).send({"status": "post created!"});
 		commitChanges(res.app.locals.postsJSON);
 	}
+	//logging
+	req.logs.resourceRequested = `createPost`;
 }
 
 const createComment = (req, res) => {
@@ -83,6 +90,8 @@ const createComment = (req, res) => {
 		res.status(status_code).send({"status": "comment created!"});
 		commitChanges(res.app.locals.postsJSON);
 	}
+	//logging
+	req.logs.resourceRequested = `createComment`;
 }
 
 //call this function with res.app.locals.postsJSON as the parameter to save changes made to the data on the server
@@ -94,6 +103,18 @@ const commitChanges = (data) => {
 	}
 }
 
+const loggingHandler = (req, res, next) => {
+	req.logs = {ip:req.connection.remoteAddress, time:Date(Date.now())};
+	next();
+	if(req.logs.resourceRequested) {
+		try {
+			fs.appendFile("./logs.txt", JSON.stringify(req.logs)+"\n");
+		} catch (err) {
+			console.error(err);
+		}
+	}
+}
+
 const main = () => {
 	const app = express();
 	const port = 3000;
@@ -101,9 +122,9 @@ const main = () => {
 	app.use(express.json());
 
 	//get routes of API
-	app.get("/posts", getAllPosts);
-	app.get("/post/:id", getSinglePost);
-	app.get("/comments/:id", getCommentsFromPost);
+	app.get("/posts", loggingHandler, getAllPosts);
+	app.get("/post/:id", loggingHandler, getSinglePost);
+	app.get("/comments/:id", loggingHandler, getCommentsFromPost);
 
 	//post routes of API
 	app.post("/createpost", createPost);
@@ -122,7 +143,7 @@ const main = () => {
 		app.locals.postsJSON = data;
 
 		app.listen(port, () => {
-			console.log(`Reaction gifs started on http://localhost:${port}`);
+			console.log(`Blogging Engine started on http://localhost:${port}`);
 		});
 	});
 };
