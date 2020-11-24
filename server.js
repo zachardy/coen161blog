@@ -318,12 +318,16 @@ const main = () => {
 	app.use(express.static('static'));
 
 	fs.readFile("./blog_posts.json", "utf-8")
-	.then((fileContents) => JSON.parse(fileContents))
-	.then((data) => {
-		app.locals.postsJSON = data;
+    .then((fileContents) => {
+        app.locals.postsJSON = JSON.parse(fileContents);
+    })
+    .catch(error => { //couldn't find the file, just use a blank array as the list of todos instead
+        app.locals.postsJSON = {"posts":[]};
+    })
+	.finally(() => {
 
 		app.listen(port, () => {
-			console.log(`Blogging Engine started on http://localhost:${port}`);
+            console.log(`Blogging Engine started on http://localhost:${port}`);
 		});
 	});
 };
