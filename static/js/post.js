@@ -63,7 +63,7 @@ function addBlogPost(parent, author, views, title, body) {
 	textContainer.appendChild(viewsElement);
 
 	let bodyElement = document.createElement("p");
-	bodyElement.innerHTML = body;
+	bodyElement.innerHTML = parsingEngine(body);
 	textContainer.appendChild(bodyElement);
 
 	parent.appendChild(textContainer);
@@ -92,4 +92,22 @@ function addComment(parent, author, body) {
 	horizontal_bar.setAttribute("style","width:100%; height:0.5vh; background-color:#fff;margin-top:0.5vh;margin-bottom:0.5vh;");
 	parent.appendChild(horizontal_bar);
 
+}
+
+const parsingEngine = (text) => { //templating
+	const tags = ["b", "i", "1", "2", "3", "4", "5", "6"];
+	const htmltags = ["b","em","h1","h2","h3","h4","h5","h6"];
+    for(let i = 0; i < tags.length; i++) {
+        const tag = tags[i];
+        const html_tag = htmltags[i];
+        const regex = new RegExp(`\\{${tag}\\}(.|\\n)*?\\{${tag}\\}`,"g");
+        let matches = text.match(regex);
+        if(!matches) continue;
+        for(let j = 0; j < matches.length; j++) {
+            const match = matches[j];
+            let formatted = `<${html_tag}>`+match.substr(2+tag.length,match.length-(5+tag.length))+`</${html_tag}>`;
+            text = text.replace(match,formatted);
+        }
+    }
+    return text;
 }

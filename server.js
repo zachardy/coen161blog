@@ -49,7 +49,37 @@ const getCommentsFromPost = (req, res) => {
 	res.status(status_code).send(comments);
 	//logging
 	req.logs.resource = `getCommentsFromPost/${id}`;
-}	
+}
+
+const getStats = (req, res) => {
+	let posts = req.app.locals.postsJSON["posts"];
+	posts.sort((a,b) => {
+	if(a.views > b.views) return -1;
+	else return 1;
+	});
+	const most_viewed = posts[0];
+	
+	posts.sort((a,b) => {
+	if(a.comments.length > b.comments.length) return -1;
+	else return 1;
+	});
+	const most_commented = posts[0];
+	
+	const total_views = posts.reduce((views_sum, post) => views_sum + post.views, 0);
+	
+	const total_comments = posts.reduce((comments_sum, post) => comments_sum + post.comments.length, 0);
+	
+	const stats = {
+		"most_viewed":most_viewed,
+		"most_commented":most_commented,
+		"total_posts":posts.length,
+		"total_views": total_views,
+		"total_comments":total_comments
+	};
+	console.log(stats);
+	res.status(200).send(stats);
+	req.logs.resource = `getStats`;
+}
 
 const createPost = (req, res) => {
 	let status_code = 200;
@@ -270,6 +300,7 @@ const main = () => {
 	app.get("/api/posts", loggingHandler, getAllPosts);
 	app.get("/api/post/:id", loggingHandler, getSinglePost);
 	app.get("/api/comments/:id", loggingHandler, getCommentsFromPost);
+	app.get("/api/stats/", loggingHandler, getStats);
 
 	//post routes of API
 	app.post("/api/createpost", loggingHandler, createPost);

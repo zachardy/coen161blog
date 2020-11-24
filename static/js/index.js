@@ -39,10 +39,10 @@ function addBlogPost(parent, id, author, views, title, body) {
 
 	let bodyElement = document.createElement("p");
 	if(body.length > 250) { //dont bother rendering html since we are slicing
-		bodyElement.innerText = body.slice(0,250) + "... click to read more";
+		bodyElement.innerHTML = parsingEngine(body.slice(0,250)) + "... click to read more";
 	}
 	else { //render post as proper html
-		bodyElement.innerHTML = body;
+		bodyElement.innerHTML = parsingEngine(body);
 	}
 	textContainer.appendChild(bodyElement);
 
@@ -51,4 +51,22 @@ function addBlogPost(parent, id, author, views, title, body) {
 	let horizontal_bar = document.createElement("div");
 	horizontal_bar.setAttribute("style","width:100%; height:1vh; background-color:#fff;margin-top:2vh;margin-bottom:2vh;");
 	parent.appendChild(horizontal_bar);
+}
+
+const parsingEngine = (text) => { //templating
+	const tags = ["b", "i", "1", "2", "3", "4", "5", "6"];
+	const htmltags = ["b","em","h1","h2","h3","h4","h5","h6"];
+    for(let i = 0; i < tags.length; i++) {
+        const tag = tags[i];
+        const html_tag = htmltags[i];
+        const regex = new RegExp(`\\{${tag}\\}(.|\\n)*?\\{${tag}\\}`,"g");
+        let matches = text.match(regex);
+        if(!matches) continue;
+        for(let j = 0; j < matches.length; j++) {
+            const match = matches[j];
+            let formatted = `<${html_tag}>`+match.substr(2+tag.length,match.length-(5+tag.length))+`</${html_tag}>`;
+            text = text.replace(match,formatted);
+        }
+    }
+    return text;
 }
