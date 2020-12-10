@@ -1,3 +1,7 @@
+//Coen161
+//10 December 2020
+//Final Project - server.js
+
 const express = require('express');
 const fs = require('fs').promises;
 
@@ -54,14 +58,14 @@ const getCommentsFromPost = (req, res) => {
 const getStats = (req, res) => {
 	let posts = req.app.locals.postsJSON["posts"];
 	posts.sort((a,b) => {
-	if(a.views > b.views) return -1;
-	else return 1;
+		if(a.views > b.views) return -1;
+		else return 1;
 	});
 	const most_viewed = posts[0];
 	
 	posts.sort((a,b) => {
-	if(a.comments.length > b.comments.length) return -1;
-	else return 1;
+		if(a.comments.length > b.comments.length) return -1;
+		else return 1;
 	});
 	const most_commented = posts[0];
 	
@@ -76,7 +80,7 @@ const getStats = (req, res) => {
 		"total_views": total_views,
 		"total_comments":total_comments
 	};
-	console.log(stats);
+	
 	res.status(200).send(stats);
 	req.logs.resource = `getStats`;
 }
@@ -270,11 +274,11 @@ const getCommentFromIds = (postsJSON, post_id, comment_id) => {
 }
 
 const nextPostId = (postsJSON) => {
-    let max_id = 0;
-    for(let i = 0; i < postsJSON["posts"].length; i++) {
-        max_id = Math.max(max_id, postsJSON["posts"][i].id)
-    }
-    return max_id + 1;
+	let max_id = 0;
+	for(let i = 0; i < postsJSON["posts"].length; i++) {
+		max_id = Math.max(max_id, postsJSON["posts"][i].id)
+	}
+	return max_id + 1;
 }
 
 //Writes Access Logs
@@ -292,21 +296,31 @@ const loggingHandler = (req, res, next) => {
 
 const main = () => {
 	const app = express();
-	const port = 3000;
-
+	
+	let PORT = 3000; //default port
+	
+	if(process.argv && process.argv.length >=3) {
+		PORT = process.argv[2].substr(process.argv[2].indexOf("=")+1,process.argv[2].length); //some funky index manipulation to get the port as a command line argument
+		if(PORT === undefined || PORT === 0 || !PORT) { //falsy checks, if this went wrong just set port back to default
+			PORT = 3000;
+		}
+	}
+	
 	app.use(express.json());
-
+	
 	//get routes of API
 	app.get("/api/posts", loggingHandler, getAllPosts);
 	app.get("/api/post/:id", loggingHandler, getSinglePost);
 	app.get("/api/comments/:id", loggingHandler, getCommentsFromPost);
 	app.get("/api/stats/", loggingHandler, getStats);
-
+	//the assignment description wanted stats to be at /stats, but I wrote my frontend-ui around using /api/stats (and also /api/stats makes more sense to me than just /stats, so I included this route just for completeness)
+	app.get("/stats", loggingHandler, getStats);
+	
 	//post routes of API
 	app.post("/api/createpost", loggingHandler, createPost);
 	app.post("/api/createcomment", loggingHandler, createComment);
-
-
+	
+	
 	//update routs of API (unused in front-end but included for CRUD completeness)
 	app.put("/api/updatepost/:id", loggingHandler, updatePost);
 	app.put("/api/updatecomment/:post_id/comments/:comment_id", loggingHandler, updateComment); //yes, this url does blow up slightly but i think it's okay
@@ -314,22 +328,22 @@ const main = () => {
 	//delete routes of API (also unused in front-end but included for CRUD completeness)
 	app.delete("/api/deletepost/:id", loggingHandler, deletePost);
 	app.delete("/api/deletecomment/:post_id/comments/:comment_id", loggingHandler, deleteComment);
-
+	
 	app.use(express.static('static'));
-
+	
 	fs.readFile("./blog_posts.json", "utf-8")
-    .then((fileContents) => {
-        app.locals.postsJSON = JSON.parse(fileContents);
-    })
-    .catch(error => { //couldn't find the file, just use a blank array as the list of todos instead
-        app.locals.postsJSON = {"posts":[]};
-    })
-	.finally(() => {
-
-		app.listen(port, () => {
-            console.log(`Blogging Engine started on http://localhost:${port}`);
-		});
+	.then((fileContents) => {
+		app.locals.postsJSON = JSON.parse(fileContents);
+	})
+	.catch(error => { //couldn't find the file, just use a blank array as the list of todos instead
+	app.locals.postsJSON = {"posts":[]};
+})
+.finally(() => {
+	
+	app.listen(PORT, () => {
+		console.log(`Blogging Engine started on http://localhost:${PORT}`);
 	});
+});
 };
 
 main();
@@ -340,6 +354,8 @@ GETS
 curl localhost:3000/api/posts
 curl localhost:3000/api/post/1
 curl localhost:3000/api/comments/1
+curl localhost:3000/api/stats
+curl localhost:3000/stats
 
 POSTS
 curl -X POST -H "content-type: application/json" -d '{"author":"writer","title":"here is a new post everyone!","body":"and here is the body to my post"}' localhost:3000/api/createpost
@@ -350,6 +366,6 @@ curl -X PUT -H "content-type: application/json" -d '{"author":"zebbe","title":"u
 curl -X PUT -H "content-type: application/json" -d '{"author":"not zebbe","body":"the body changed again!"}' localhost:3000/api/updatecomment/1/comments/1
 
 DELETES
-curl -X DELETE localhost:3000/api/deletepost/5
+curl -X DELETE localhost:3000/api/deletepost/3
 curl -X DELETE localhost:3000/api/deletecomment/1/comments/2
 */
